@@ -1,8 +1,6 @@
 ﻿using QX_Frame.App.WebApi;
 using QX_Frame.FilesCenter.Helper;
 using QX_Frame.Helper_DG;
-using QX_Frame.Helper_DG.Extends;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 /**
@@ -52,12 +51,10 @@ namespace QX_Frame.FilesCenter.Controllers
         {
             string root = IO_Helper_DG.RootPath_MVC;
 
-            IO_Helper_DG.CreateDirectoryIfNotExist(root + "/temp");
+            //new folder
+            string newRoot = root + @"Files/Files/";
 
-            var provider = new MultipartFormDataStreamProvider(root + "/temp");
-
-            // Read the form data.  
-            await Request.Content.ReadAsMultipartAsync(provider);
+            IO_Helper_DG.CreateDirectoryIfNotExist(newRoot);
 
             List<string> fileNameList = new List<string>();
 
@@ -67,36 +64,29 @@ namespace QX_Frame.FilesCenter.Controllers
 
             int fileIndex = 1;
 
-            // This illustrates how to get the file names.
-            foreach (MultipartFileData file in provider.FileData)
+            HttpFileCollection files = HttpContext.Current.Request.Files;
+
+            foreach (var f in files.AllKeys)
             {
-                //new folder
-                string newRoot = root + @"Files/Files";
-
-                IO_Helper_DG.CreateDirectoryIfNotExist(newRoot);
-
-                if (File.Exists(file.LocalFileName))
+                HttpPostedFile file = files[f];
+                if (!string.IsNullOrEmpty(file.FileName))
                 {
-                    //new fileName
-                    string fileName = file.Headers.ContentDisposition.FileName.Substring(1, file.Headers.ContentDisposition.FileName.Length - 2);
 
-                    string newFileName = Guid.NewGuid() + "." + fileName.Split('.')[1];
+                    string fileLocalFullName = newRoot + file.FileName;
 
-                    string newFullFileName = newRoot + "/" + newFileName;
+                    file.SaveAs(fileLocalFullName);
 
-                    fileNameList.Add($"Files/Files/{newFileName}");
+                    fileNameList.Add($"Files/Files/{file.FileName}");
 
-                    FileInfo fileInfo = new FileInfo(file.LocalFileName);
+                    FileInfo fileInfo = new FileInfo(fileLocalFullName);
 
                     fileTotalSize += fileInfo.Length;
 
-                    sb.Append($" #{fileIndex} Uploaded file: {newFileName} ({ fileInfo.Length} bytes)");
+                    sb.Append($" #{fileIndex} Uploaded file: {file.FileName} ({ fileInfo.Length} bytes)");
 
                     fileIndex++;
 
-                    File.Move(file.LocalFileName, newFullFileName);
-
-                    Trace.WriteLine("1 file copied , filePath=" + newFullFileName);
+                    Trace.WriteLine("1 file copied , filePath=" + fileLocalFullName);
                 }
             }
 

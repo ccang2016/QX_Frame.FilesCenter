@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QX_Frame.Helper_DG;
+using System;
 using System.Web.Http;
 
 namespace QX_Frame.FilesCenter.Controllers
@@ -7,7 +8,9 @@ namespace QX_Frame.FilesCenter.Controllers
     {
         public IHttpActionResult Get()
         {
-            return Json(new { Uid = Guid.NewGuid(), Name = "Default -- qixiao !", Value = "QX_Frame.Value" });
+            string ipAddress = Request.GetIpAddressFromRequest();
+            return Json(new { Uid = Guid.NewGuid(), Name = "Default -- qixiao !", Value = "QX_Frame.Value" ,ipAddress= ipAddress });
         }
+
     }
 }

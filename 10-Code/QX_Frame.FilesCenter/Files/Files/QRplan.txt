@@ -1,0 +1,17 @@
+delete db insert other db
+
+winform server  timer/ time user can set
+
+get data from db save 30 days
+
+
+email send:
+
+
+
+
+详细报警记录
+
+表格筛选条件：报警记录 报警次数 日期 30days
+
+8:00 get date to 8:00
