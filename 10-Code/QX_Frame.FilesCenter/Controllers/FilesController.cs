@@ -49,11 +49,12 @@ namespace QX_Frame.FilesCenter.Controllers
         //POST : api/Files
         public async Task<IHttpActionResult> Post()
         {
+            //get server root physical path
             string root = IO_Helper_DG.RootPath_MVC;
 
             //new folder
             string newRoot = root + @"Files/Files/";
-
+            //check path is exist if not create it
             IO_Helper_DG.CreateDirectoryIfNotExist(newRoot);
 
             List<string> fileNameList = new List<string>();
@@ -64,31 +65,36 @@ namespace QX_Frame.FilesCenter.Controllers
 
             int fileIndex = 1;
 
+            //get files from request
             HttpFileCollection files = HttpContext.Current.Request.Files;
 
-            foreach (var f in files.AllKeys)
+            await Task.Run(() =>
             {
-                HttpPostedFile file = files[f];
-                if (!string.IsNullOrEmpty(file.FileName))
+                foreach (var f in files.AllKeys)
                 {
+                    HttpPostedFile file = files[f];
+                    if (!string.IsNullOrEmpty(file.FileName))
+                    {
 
-                    string fileLocalFullName = newRoot + file.FileName;
+                        string fileLocalFullName = newRoot + file.FileName;
 
-                    file.SaveAs(fileLocalFullName);
+                        file.SaveAs(fileLocalFullName);
 
-                    fileNameList.Add($"Files/Files/{file.FileName}");
+                        fileNameList.Add($"Files/Files/{file.FileName}");
 
-                    FileInfo fileInfo = new FileInfo(fileLocalFullName);
+                        FileInfo fileInfo = new FileInfo(fileLocalFullName);
 
-                    fileTotalSize += fileInfo.Length;
+                        fileTotalSize += fileInfo.Length;
 
-                    sb.Append($" #{fileIndex} Uploaded file: {file.FileName} ({ fileInfo.Length} bytes)");
+                        sb.Append($" #{fileIndex} Uploaded file: {file.FileName} ({ fileInfo.Length} bytes)");
 
-                    fileIndex++;
+                        fileIndex++;
 
-                    Trace.WriteLine("1 file copied , filePath=" + fileLocalFullName);
+                        Trace.WriteLine("1 file copied , filePath=" + fileLocalFullName);
+                    }
                 }
-            }
+            });
+
 
             return Json(Return_Helper.Success_Msg_Data_DCount_HttpCode($"{fileNameList.Count} file(s) /{fileTotalSize} bytes uploaded successfully!     Details -> {sb.ToString()}", fileNameList, fileNameList.Count));
         }
