@@ -1,0 +1,96 @@
+<!doctype>
+
+<head>
+	<script src="jquery-3.2.0.min.js"></script>
+	<!--<script src="jquery-1.11.1.js"></script>-->
+	<!--<script src="ajaxfileupload.js"></script>-->
+	<script>
+		$(document).ready(function () {
+			var appDomain = "http://localhost:3997/";
+
+
+			$("#btn_fileUpload").click(function () {
+
+				/**
+				 * 用ajax方式上传文件	-----------
+			 	* */
+				//-------asp.net webapi fileUpload
+				//这种方式10kb内小文件没有问题，超出大小会失败
+				var formData = new FormData($("#uploadForm")[0]);
+				$.ajax({
+					url: appDomain + 'api/Picture/pic',
+					type: 'POST',
+					data: formData,
+					async: false,
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function (data) {
+						console.log(JSON.stringify(data));
+					},
+					error: function (data) {
+						console.log(JSON.stringify(data));
+					}
+				});
+				//----end asp.net webapi fileUpload
+
+				//----.net core webapi fileUpload
+				// var fileUpload = $("#files").get(0);
+				// var files = fileUpload.files;
+				// var data = new FormData();
+				// for (var i = 0; i < files.length; i++) {
+				// 	  data.append(files[i].name, files[i]);
+				// }
+				// $.ajax({
+				// 	type: "POST",
+				// 	url: appDomain+'api/File',
+				// 	contentType: false,
+				// 	processData: false,
+				// 	data: data,
+				// 	success: function (data) {
+				// 		console.log(JSON.stringify(data));
+				// 	},
+				// 	error: function () {
+				// 		console.log(JSON.stringify(data));
+				// 	}
+				// });
+				//--------end net core webapi fileUpload
+
+				/**
+				 * ajaxfileupload.js 方式上传文件
+				 * */
+				// $.ajaxFileUpload({
+				// 	type: 'post',
+				// 	url: appDomain + 'api/File',
+				// 	secureuri: false,
+				// 	fileElementId: 'files',
+				// 	success: function (data) {
+				// 		console.log(JSON.stringify(data));
+				// 	},
+				// 	error: function () {
+				// 		console.log(JSON.stringify(data));
+				// 	}
+				// });
+
+			});
+			//end click
+
+
+		})
+	</script>
+</head>
+<title></title>
+
+<body>
+	<article>
+		<header>
+			<h2>article-form</h2>
+		</header>
+		<p>
+			<form action="/" method="post" id="uploadForm" enctype="multipart/form-data">
+				<input type="file" id="files" name="files" placeholder="file" multiple>file-multiple属性可以选择多项<br><br>
+				<input type="button" id="btn_fileUpload" value="fileUpload">
+			</form>
+		</p>
+	</article>
+</body>

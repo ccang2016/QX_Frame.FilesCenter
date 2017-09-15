@@ -1,0 +1,153 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>UploadTest</title>
+    <link href="~/uploadify/uploadify.css" rel="stylesheet" />
+    
+</head>
+<body>
+    @*<h1>uploadify 3.2 文件上传的基本实现</h1>
+    <p>
+        使用了 12 个参数
+        <ul>
+            <li>uploader: 服务器端接收上传文件的地址</li>
+            <li>swf：用来实现客户端支持的 Flash</li>
+
+            <li>width：按钮的宽度</li>
+            <li>height：按钮的高度</li>
+            <li>buttonText: 上传按钮的文字</li>
+            <li>buttonCursor：按钮的鼠标图标</li>
+
+            <li>fileObjName：上传文件的请求参数名称</li>
+
+            <li>fileTypeExts：上传文件过滤使用的扩展名</li>
+            <li>fileTypeDesc：上传文件的类型描述</li>
+
+            <li>auto：选择之后，是否自动开始上传</li>
+            <li>multi：是否允许上传多个文件</li>
+            <li>queueSizeLimit：同时选择多个文件的限额</li>
+        </ul>
+    </p>*@
+
+    <span id="choose"></span><br />
+    <span id="uploading"></span><br />
+    <span id="uploaded"></span><br />
+    <span id="uploadSpeed"></span><br />
+
+
+    <span id="uploadify"></span>
+
+    <script src="~/Web/jquery-1.8.3.min.js"></script>
+    <script src="~/uploadify/jquery.uploadify.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var count = 0;
+            var size = 0;
+            var sec = 1;
+
+            var interval;
+
+
+
+            $('#uploadify').uploadify({
+                uploader: '/Home/Upload',           // 服务器端处理地址
+                swf: '/uploadify/uploadify.swf',    // 上传使用的 Flash
+
+                width: 60,                          // 按钮的宽度
+                height: 23,                         // 按钮的高度
+                buttonText: "上传",                 // 按钮上的文字
+                buttonCursor: 'hand',                // 按钮的鼠标图标
+
+                fileObjName: 'Filedata',            // 上传参数名称
+                'fileSizeLimit': '5MB',
+
+                // 两个配套使用
+                fileTypeExts: "*.jpg;*.png",             // 扩展名
+                fileTypeDesc: "请选择 jpg png 文件",     // 文件说明
+                'removeCompleted': false, //上传后保持队列不消失
+
+                auto: true,                // 选择之后，自动开始上传
+                multi: true,               // 是否支持同时上传多个文件
+                queueSizeLimit: 20,          // 允许多文件上传的时候，同时上传文件的个数
+                //事件
+                'onSelect': function (file)//从浏览窗口中选择文件
+                {
+                    if (file.size / 1024 / 1024 > 10) //文件10M
+                    {
+                        alert('文件过大，请分批上传！');
+                        $('#myUploadFile').uploadify('cancel', file.id); //cancel方法可以带上file的id作为参数，指定取消该项。
+                    }
+                    //$('#msg').text('');
+                },
+                'onCancel': function (file)//从队列中取消文件
+                {
+                    //alert('文件： ' + file.name + ' 被取消.');
+                },
+                'onClearQueue': function (queueItemCount) {//只在未上传前有效，上传后其实还保存在队列中。
+                    //alert(queueItemCount + ' file(s) were removed from the queue');
+                },
+                'onDialogClose': function (queueData) //当浏览窗口关闭时
+                {
+                    
+                    $("#choose").html("选择了 -> " + queueData.filesSelected + " 个");
+
+                    interval = setInterval(function () {
+
+                        $("#uploadSpeed").html("传输速率 -> " + size /1024/1024 / sec + " MB/s")
+                        sec++;
+                    }, 1000);
+                    //alert(queueData.filesQueued + ' files were queued of ' + queueData.filesSelected + ' selected files. There are ' + queueData.queueLength + ' total files in the queue.');
+                },
+                'onQueueComplete': function (queueData)//全部上传完毕后触发
+                {
+                    clearInterval(interval); 
+
+                    $("#uploaded").html("共有 -> " + queueData.uploadsSuccessful + " 个文件上传成功！")
+
+
+                    //alert(queueData.uploadsSuccessful + ' 个文件成功上传。');
+                    $('.progress').show();//显示进度动画
+                },
+                'onUploadError': function (file, errorCode, errorMsg, errorString) {
+                    //alert('The file ' + file.name + ' 上传失败: ' + errorString);
+                    //alert('errorCode:'+errorCode);
+                    //alert('errormsg:' + errorMsg);//500
+                    //alert('errorString:' + errorString);//HTTP Error (500)
+                },
+                'onUploadSuccess': function (file, data, response) {//每个文件上传成功时触发该事件
+                    //alert('The file ' + file.name + ' 上传成功！');
+                    count++;
+                    size += file.size;
+                    $("#uploading").html(" -> " + count + " 个文件上传成功！")
+                    //alert('response is :' + response); //response is true
+                },
+                'onSelectError': function (file, errorCode, errorMsg) //错误信息
+                {
+                    switch (errorCode) {
+                        case -100:
+                            alert("上传的文件数量已超过系统限制的" + $('#myUploadFile').uploadify('settings', 'queueSizeLimit') + "个文件");
+                            break;
+                        case -110:
+                            alert("文件(" + file.name + ")大小超出系统限制的" + $('#myUploadFile').uploadify('settings', 'fileSizeLimit') + "大小！");
+                            break;
+                        case -120:
+                            alert("文件(" + file.name + ")大小异常！");
+                            break;
+                        case -130:
+                            alert("文件(" + file.name + ")类型不正确！");
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
