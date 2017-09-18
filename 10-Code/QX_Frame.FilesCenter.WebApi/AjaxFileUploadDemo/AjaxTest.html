@@ -2,8 +2,8 @@
 
 <head>
 	<script src="jquery-3.2.0.min.js"></script>
-	<!--<script src="jquery-1.11.1.js"></script>-->
-	<!--<script src="ajaxfileupload.js"></script>-->
+	<!-- <script src="jquery-1.11.1.js"></script>
+	<script src="ajaxfileupload.js"></script> -->
 	<script>
 		$(document).ready(function () {
 			var appDomain = "http://localhost:3997/";
@@ -18,7 +18,7 @@
 				//这种方式10kb内小文件没有问题，超出大小会失败
 				var formData = new FormData($("#uploadForm")[0]);
 				$.ajax({
-					url: appDomain + 'api/Picture/pic',
+					url: appDomain + 'api/File',
 					type: 'POST',
 					data: formData,
 					async: false,
